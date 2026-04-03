@@ -1,0 +1,14 @@
+{
+  "name": "meeting-room-booking-ai-agent-main",
+  "version": "1.0.0",
+  "description": "An intelligent AI-powered meeting room booking system built with LangGraph and advanced natural language processing capabilities. The system provides seamless room reservation through conversational interfaces, featuring automated availability checking, smart scheduling, and comprehensive booking management.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "dominic-wokorach",
+  "license": "ISC"
+}
