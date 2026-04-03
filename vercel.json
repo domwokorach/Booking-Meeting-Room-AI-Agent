@@ -15,6 +15,7 @@
     }
   ],
   "env": {
-    "PYTHONPATH": "/var/task/src"
+    "PYTHONPATH": "/var/task/src",
+    "VERCEL": "1"
   }
 }
