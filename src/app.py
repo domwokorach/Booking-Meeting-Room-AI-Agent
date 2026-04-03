@@ -11,8 +11,14 @@ from config import FlaskConfig, logger
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
 
-# Initialize workflow
-workflow = create_workflow()
+# Lazy-load workflow to avoid crashing on cold start
+_workflow = None
+
+def get_workflow():
+    global _workflow
+    if _workflow is None:
+        _workflow = create_workflow()
+    return _workflow
 
 @app.before_request
 def initialize_session():
@@ -44,8 +50,8 @@ def booking():
     session['agent_state']['messages'] = [dict_to_message(msg) for msg in session['agent_state']['messages']]
 
     ######################## Process through workflow ########################
-    logger.info(" >>>>> Processing through workflow, user input: %s")#, session['agent_state'])
-    response = workflow.invoke(session['agent_state'])
+    logger.info(" >>>>> Processing through workflow, user input: %s")
+    response = get_workflow().invoke(session['agent_state'])
     # 1. save LLM response to agent state in the session and 
     # Extract only the latest assistant message
     assistant_message = None

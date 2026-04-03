@@ -33,11 +33,30 @@ LANGCHAIN_TRACING_V2 = os.environ.get("LANGCHAIN_TRACING_V2", "false")
 LANGCHAIN_ENDPOINT = os.environ.get("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
 LANGCHAIN_API_KEY = os.environ.get("LANGCHAIN_API_KEY", "")
 
-# File Paths
-ROOMS_FILE = PROJECT_DIR / "data/rooms.json"
-BOOKINGS_FILE = PROJECT_DIR / "data/bookings.json"
-MSG_JSON_FILE = PROJECT_DIR / "data/clarification_messages.json"
-LOGS_DIR = PROJECT_DIR / "logs"
+# File Paths — use /tmp on Vercel (read-only filesystem), local data/ elsewhere
+import shutil
+
+_DATA_SRC = PROJECT_DIR / "data"
+_IS_VERCEL = os.environ.get("VERCEL", "") == "1"
+
+if _IS_VERCEL:
+    _TMP_DATA = Path("/tmp/data")
+    _TMP_DATA.mkdir(parents=True, exist_ok=True)
+    # Copy read-only data files to /tmp so they can be written to
+    for _f in ["rooms.json", "bookings.json", "clarification_messages.json"]:
+        _src = _DATA_SRC / _f
+        _dst = _TMP_DATA / _f
+        if _src.exists() and not _dst.exists():
+            shutil.copy(_src, _dst)
+    ROOMS_FILE = _TMP_DATA / "rooms.json"
+    BOOKINGS_FILE = _TMP_DATA / "bookings.json"
+    MSG_JSON_FILE = _TMP_DATA / "clarification_messages.json"
+    LOGS_DIR = Path("/tmp/logs")
+else:
+    ROOMS_FILE = _DATA_SRC / "rooms.json"
+    BOOKINGS_FILE = _DATA_SRC / "bookings.json"
+    MSG_JSON_FILE = _DATA_SRC / "clarification_messages.json"
+    LOGS_DIR = PROJECT_DIR / "logs"
 
 
 # Logging Configuration
