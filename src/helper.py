@@ -2,11 +2,17 @@
 # src/helper.py
 import json
 from langchain_groq import ChatGroq
-from langchain_ollama import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.prompts import PromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage
 from langchain.output_parsers import PydanticOutputParser
+
+# Ollama runs locally only — skip import on Vercel
+try:
+    from langchain_ollama import ChatOllama
+    _OLLAMA_AVAILABLE = True
+except ImportError:
+    _OLLAMA_AVAILABLE = False
 
 from typing import Dict
 
@@ -26,20 +32,20 @@ def initialize_llm(name: str, temp: float=0.0):
     Initialize the LLM with tools. we can choose from different types of LLMs.
     """
     if name.lower() == "ollama":
-        llm = ChatOllama(model_name=OLLAMA_MODEL_NAME,
-                          ollama_api_key=OLLAMA_API_KEY,
-                          temperature=temp)
+        if not _OLLAMA_AVAILABLE:
+            raise RuntimeError("langchain_ollama is not available in this environment.")
+        llm = ChatOllama(model=OLLAMA_MODEL_NAME, temperature=temp)
         logger.info(f">>>> Load Ollama: {OLLAMA_MODEL_NAME} model correctly.")
-    
+
     elif name.lower() == "gemini":
-        llm = ChatGoogleGenerativeAI(model=GEMINI_MODEL_NAME,  # Explicitly pass the model
+        llm = ChatGoogleGenerativeAI(model=GEMINI_MODEL_NAME,
                                       google_api_key=GEMINI_API_KEY,
                                       temperature=temp)
         logger.info(f">>>> Load Gemini: {GEMINI_MODEL_NAME} model correctly.")
 
     elif name.lower() == "groq":
-        llm = ChatGroq(model_name=GROQ_MODEL_NAME,
-                        groq_api_key=GROQ_API_KEY,
+        llm = ChatGroq(model=GROQ_MODEL_NAME,
+                        api_key=GROQ_API_KEY,
                         temperature=temp)
         logger.info(f">>>> Load Groq: {GROQ_MODEL_NAME} model correctly.")
 
@@ -118,7 +124,7 @@ def get_missing_fields(parsed_request: dict) -> list:
         # or (parsed_request[field] == "nothing")
         or (field == "duration_hours" and parsed_request[field] <= 0)
     ]
-def load_clarification_msgs(filepath:str = MSG_JSON_FILE) -> Dict:
+def load_clarification_msgs(filepath = MSG_JSON_FILE) -> Dict:
     """
     Load clarification messages from a JSON file.
     """

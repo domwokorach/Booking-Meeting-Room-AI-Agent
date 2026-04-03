@@ -1,0 +1,12 @@
+# Exclude local dev files
+.env
+.git
+logs/
+docs/
+*.md
+*.pyc
+__pycache__/
+.pytest_cache/
+node_modules/
+package.json
+package-lock.json
